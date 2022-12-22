@@ -1,0 +1,31 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+    name: xdostorages.aws.storage.acw.alvsanand.github.io
+    labels:
+        serviceType: storage
+        provider: aws
+    annotations:
+        argocd.argoproj.io/sync-wave: "1"
+spec:
+    compositeTypeRef:
+        apiVersion: storage.acw.alvsanand.github.io/v1alpha1
+        kind: XDObjectStorage
+    resources:
+        - name: s3bucket
+          base:
+              apiVersion: s3.aws.crossplane.io/v1beta1
+              kind: Bucket
+              spec:
+                  forProvider:
+                      acl: public-read-write
+                      locationConstraint: us-east-1
+                  providerConfigRef:
+                      name: default
+          patches:
+              - fromFieldPath: "spec.parameters.storageName"
+                toFieldPath: "metadata.name"
+                transforms:
+                    - type: string
+                      string:
+                          fmt: "%s-acw"
